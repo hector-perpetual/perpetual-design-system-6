@@ -106,7 +106,7 @@ def graphic(x, y, w, h, tint="#DBE7FB", variant="abstract", r=12, shadow=False):
             bh = h * (0.16 + 0.13 * i)
             out.append(box(bx + i * (bw + gap), base - bh, bw, bh, fill=cols[i], r=4))
         out.append(box(cx - w * 0.3, y + h * 0.16, h * 0.2, h * 0.2, fill=ACCENT, oval=True))
-        out.append(hexagon(cx + w * 0.16, y + h * 0.14, h * 0.16, YELLOW))
+        out.append(box(cx + w * 0.16, y + h * 0.14, h * 0.16, h * 0.16, fill=YELLOW, oval=True))
     elif variant == "quote":
         out.append(txt(x, y + h * 0.06, w, h * 0.45, "&ldquo;", 92, ACCENT, 800, "center"))
         out.append(txt(x, y + h * 0.62, w, h * 0.2,
@@ -115,18 +115,24 @@ def graphic(x, y, w, h, tint="#DBE7FB", variant="abstract", r=12, shadow=False):
         out.append(box(cx - w * 0.28, cy - h * 0.16, h * 0.34, h * 0.34, fill=ACCENT, oval=True))
         out.append(box(cx + w * 0.03, cy - h * 0.02, h * 0.22, h * 0.22, fill=ACCENT2, oval=True))
         out.append(box(cx - w * 0.02, cy + h * 0.16, h * 0.13, h * 0.13, fill=YELLOW, oval=True))
-        out.append(hexagon(cx + w * 0.12, cy - h * 0.26, h * 0.17, WHITE))
+        out.append(box(cx + w * 0.12, cy - h * 0.26, h * 0.17, h * 0.17, fill=WHITE, oval=True))
     return "".join(out)
 
 
-def title(runs, x=0.7, y=0.7, w=7.5, size=33):
-    return logo(0.6, 0.5, 1.15) + txt(x, y + 0.55, w, 1.2, runs, size, TEXT, 800, lh=1.0)
+def title(runs, x=0.7, y=0.7, w=7.5, size=33, sub=None, sub_w=11.0, sub_color=MUTED, sub_size=12.5):
+    """Logo arriba + titulo (2 lineas) + subtitulo opcional DEBAJO del bloque
+    completo del titulo, con gap. El titulo ocupa hasta y+0.55+0.92 (~2 lineas);
+    el subtitulo se coloca a y_sub para no pisarlo nunca."""
+    out = logo(0.6, 0.5, 1.15) + txt(x, y + 0.55, w, 1.05, runs, size, TEXT, 800, lh=1.0)
+    if sub is not None:
+        y_sub = y + 0.55 + 0.98 + 0.16  # base titulo (2 lineas) + gap
+        out += txt(x + 0.02, y_sub, sub_w, 0.45, sub, sub_size, sub_color, 400, lh=1.2)
+    return out
 
 
 def footer(page):
-    return (logo(0.55, 7.02, 0.92)
-            + txt(1.75, 7.0, 7, 0.3, "Confidencial &middot; Perpetual Technologies &copy; 2026",
-                  8.5, MUTED, 400, "left", "middle")
+    return (txt(0.7, 7.0, 8, 0.3, "Confidencial &middot; Perpetual Technologies &copy; 2026",
+                8.5, MUTED, 400, "left", "middle")
             + txt(11.7, 7.0, 1.1, 0.3, str(page).zfill(2), 8.5, MUTED, 400, "right", "middle"))
 
 
@@ -151,8 +157,10 @@ def donut(x, y, d, pct, color=ACCENT, track=SURFACE2, label=None,
     sw = thick or px * 0.13
     ps = pct_size or d * 26
     st = f"position:absolute;left:{_p(x)};top:{_p(y)};width:{px:.1f}px;height:{px:.1f}px;"
-    svg = (f'<svg width="{px:.1f}" height="{px:.1f}" viewBox="0 0 {px:.1f} {px:.1f}" '
-           f'style="position:absolute;left:0;top:0;transform:rotate(-90deg)">'
+    pad = sw  # padding suficiente para que el linecap redondeado no se recorte
+    vb = f"{-pad:.1f} {-pad:.1f} {px + 2 * pad:.1f} {px + 2 * pad:.1f}"
+    svg = (f'<svg width="{px:.1f}" height="{px:.1f}" viewBox="{vb}" '
+           f'style="position:absolute;left:0;top:0;overflow:visible;transform:rotate(-90deg)">'
            f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" fill="none" stroke="{track}" stroke-width="{sw:.1f}"/>'
            f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" fill="none" stroke="{color}" '
            f'stroke-width="{sw:.1f}" stroke-linecap="round" '
@@ -236,8 +244,8 @@ def line_icon(x, y, size, color, name, circle=True):
 
 
 def bullet(x, y, w, head, body, color=ACCENT):
-    """Bullet con viñeta hexagonal pequeña + titulo + texto."""
-    return (hexagon(x, y + 0.04, 0.2, color)
+    """Bullet con viñeta circular pequeña + titulo + texto."""
+    return (box(x, y + 0.04, 0.2, 0.2, fill=color, oval=True)
             + txt(x + 0.36, y - 0.04, w - 0.36, 0.34, head, 13, TEXT, 600)
             + txt(x + 0.36, y + 0.32, w - 0.36, 0.9, body, 11, MUTED, 400, lh=1.3))
 
@@ -268,9 +276,8 @@ def s01():  # Portada ejecutiva
 
 
 def s02():  # Roadmap — 5 fases en barras horizontales
-    out = [title(f"Roadmap {AC('estrategico.')}"),
-           txt(0.72, 2.18, 9.0, 0.4, "Cinco fases secuenciales para ejecutar el plan a lo largo del ano.",
-               12.5, MUTED, 400)]
+    out = [title(f"Roadmap {AC('estrategico.')}",
+                 sub="Cinco fases secuenciales para ejecutar el plan a lo largo del ano.")]
     phases = [("Fase 1", "Diagnostico y bases", 100, DATA[0], "Q1"),
               ("Fase 2", "Optimizacion comercial", 82, DATA[1], "Q2"),
               ("Fase 3", "Expansion de mercado", 60, DATA[2], "Q2-Q3"),
@@ -290,9 +297,8 @@ def s02():  # Roadmap — 5 fases en barras horizontales
 
 
 def s03():  # Timeline — linea horizontal con nodos (anos)
-    out = [title(f"Linea de {AC('tiempo.')}"),
-           txt(0.72, 2.18, 10.0, 0.4, "Hitos clave del plan a tres anos.", 12.5, MUTED, 400)]
-    ly = 4.05
+    out = [title(f"Linea de {AC('tiempo.')}", sub="Hitos clave del plan a tres anos.")]
+    ly = 4.55
     out.append(box(1.55, ly, 10.25, 0.04, fill=BORDER, r=3))
     nodes = [("2024", "Validacion", "Producto y modelo de negocio validados con clientes ancla.", DATA[0]),
              ("2025", "Traccion", "Crecimiento sostenido de ingresos y base de clientes recurrentes.", DATA[1]),
@@ -328,7 +334,7 @@ def s04():  # Divisor de seccion
 
 def s05():  # Mision — 3 puntos con check hexagonal
     out = [title(f"Nuestra {AC('mision.')}"),
-           txt(0.72, 2.25, 6.8, 1.4,
+           txt(0.72, 2.55, 6.8, 1.4,
                "Impulsar el crecimiento de nuestros clientes con tecnologia, datos y ejecucion disciplinada, "
                "generando valor medible en cada etapa.",
                16, DIM, 400, lh=1.4)]
@@ -348,7 +354,7 @@ def s05():  # Mision — 3 puntos con check hexagonal
 
 def s06():  # Vision — fila de 3 iconos circulares
     out = [title(f"Nuestra {AC('vision.')}"),
-           txt(0.72, 2.25, 11.0, 0.8,
+           txt(0.72, 2.55, 11.0, 0.8,
                "Ser el socio de crecimiento de referencia en la region, reconocido por convertir estrategia en resultados.",
                16, DIM, 400, lh=1.4)]
     items = [("Alcance regional", "Presencia en los principales mercados de LatAm.", DATA[0], "alcance"),
@@ -364,10 +370,9 @@ def s06():  # Vision — fila de 3 iconos circulares
 
 
 def s07():  # Objetivo de negocio — donut grande + 3 bullets
-    out = [title(f"Objetivo de {AC('negocio.')}"),
-           txt(0.72, 2.18, 6.0, 0.4, "Meta principal para el ejercicio 2026.", 12.5, MUTED, 400),
-           donut(0.95, 2.55, 3.6, 38, color=ACCENT, pct_size=46),
-           txt(0.55, 6.25, 4.4, 0.3, "Crecimiento de ingresos objetivo", 11.5, MUTED, 600, "center")]
+    out = [title(f"Objetivo de {AC('negocio.')}", sub="Meta principal para el ejercicio 2026."),
+           donut(0.95, 2.85, 3.6, 38, color=ACCENT, pct_size=46),
+           txt(0.55, 6.6, 4.4, 0.3, "Crecimiento de ingresos objetivo", 11.5, MUTED, 600, "center")]
     bl = [("Ingresos recurrentes", "Elevar la participacion de ingresos recurrentes del 52% al 68%.", DATA[0]),
           ("Margen operativo", "Mejorar el margen operativo en 6 puntos porcentuales.", DATA[1]),
           ("Retencion de clientes", "Sostener una retencion neta por encima del 110%.", DATA[2])]
@@ -378,8 +383,7 @@ def s07():  # Objetivo de negocio — donut grande + 3 bullets
 
 
 def s08():  # Approach — fila de iconos circulares con pasos
-    out = [title(f"Nuestro {AC('enfoque.')}"),
-           txt(0.72, 2.18, 11.0, 0.4, "Seis pasos para llevar la estrategia a resultados.", 12.5, MUTED, 400)]
+    out = [title(f"Nuestro {AC('enfoque.')}", sub="Seis pasos para llevar la estrategia a resultados.")]
     steps = [("01", "Descubrir", "objetivo"), ("02", "Diagnosticar", "analitica"),
              ("03", "Diseñar", "idea"), ("04", "Ejecutar", "automatizacion"),
              ("05", "Medir", "crecimiento"), ("06", "Optimizar", "seguridad")]
@@ -397,9 +401,8 @@ def s08():  # Approach — fila de iconos circulares con pasos
 
 
 def s09():  # Market Size — 4 donuts pequenos en fila
-    out = [title(f"Tamano de {AC('mercado.')}"),
-           txt(0.72, 2.18, 11.0, 0.4, "Oportunidad de mercado por segmento (penetracion estimada).",
-               12.5, MUTED, 400)]
+    out = [title(f"Tamano de {AC('mercado.')}",
+                 sub="Oportunidad de mercado por segmento (penetracion estimada).")]
     items = [("TAM", 100, DATA[5], "Mercado total direccionable"),
              ("SAM", 46, DATA[0], "Mercado servible disponible"),
              ("SOM", 18, DATA[2], "Mercado servible obtenible"),
@@ -423,7 +426,7 @@ def s10():  # Competitor Analysis — venn + bullets
             txt(9.7, 2.95, 1.9, 0.6, "Tecnologia", 11.5, WHITE, 700, "center", "middle"),
             txt(8.15, 5.25, 2.6, 0.6, "Servicio", 11.5, WHITE, 700, "center", "middle"),
             txt(8.15, 3.95, 2.6, 0.6, "Perpetual", 12, WHITE, 800, "center", "middle")]
-    out.append(txt(0.72, 2.2, 6.0, 0.3, "Donde ganamos", 11, ACCENT, 700, upper=True, spacing=1.2))
+    out.append(txt(0.72, 2.42, 6.0, 0.3, "Donde ganamos", 11, ACCENT, 700, upper=True, spacing=1.2))
     pts = [("Propuesta integrada", "Unimos estrategia, tecnologia y ejecucion donde los rivales solo cubren una parte.", DATA[0]),
            ("Modelo orientado a resultados", "Cobramos por impacto, no por horas, alineando incentivos.", DATA[1]),
            ("Velocidad de implementacion", "Ciclos de entrega mas cortos que el promedio del sector.", DATA[2]),
@@ -435,9 +438,8 @@ def s10():  # Competitor Analysis — venn + bullets
 
 
 def s11():  # Traction — linea ascendente + 3 stats
-    out = [title(f"Traccion del {AC('negocio.')}"),
-           txt(0.72, 2.18, 7.0, 0.4, "Evolucion de clientes activos por trimestre.", 12.5, MUTED, 400),
-           linechart(0.85, 2.5, 7.2, 3.4, [120, 165, 198, 236, 300, 369], color=ACCENT)]
+    out = [title(f"Traccion del {AC('negocio.')}", sub="Evolucion de clientes activos por trimestre."),
+           linechart(0.85, 2.85, 7.2, 3.15, [120, 165, 198, 236, 300, 369], color=ACCENT)]
     quarters = ["Q1", "Q2", "Q3", "Q4", "Q1", "Q2"]
     for i, q in enumerate(quarters):
         x = 0.85 + (7.2 * 0.02) + (7.2 * 0.96) * i / 5
