@@ -92,10 +92,6 @@ def photo_ph(x, y, w, h, r=12, tint="#E3ECFB"):
             + box(cxp - d * 0.16, cyp - d * 0.16, d * 0.32, d * 0.32, fill=ACCENT, oval=True))
 
 
-def tool_icon(x, y, d, fill):
-    return box(x, y, d, d, fill=fill, oval=True) + hexagon(x + d * 0.3, y + d * 0.3, d * 0.4, WHITE)
-
-
 def graphic(x, y, w, h, tint="#DBE7FB", variant="abstract", r=12, shadow=False):
     """Grafico de marca (en vez de foto): composicion abstracta on-brand.
     En Perpetual no usamos fotos de personas salvo en la slide de equipo."""
@@ -207,10 +203,36 @@ def linechart(x, y, w, h, values, color=ACCENT, fill=True, dots=True):
     return f'<div style="{st}">{"".join(svg)}</div>'
 
 
-def circ_icon(x, y, d, fill, hexsize=0.42):
-    """Icono circular con hexagono de marca dentro."""
-    return (box(x, y, d, d, fill=fill, oval=True, shadow=True)
-            + hexagon(x + (d - d * hexsize) / 2, y + (d - d * hexsize) / 2, d * hexsize, WHITE))
+# ===========================================================================
+# Sistema de iconos de linea por concepto (reemplaza icono comodin generico)
+# ===========================================================================
+ICONS = {
+ "estrategia": '<line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><circle cx="12" cy="12" r="7"/><polygon points="12,8 14.5,13.5 12,12.5 9.5,13.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>',
+ "crecimiento": '<polyline points="3,17 8,10 13,13 20,5"/><polyline points="15,5 20,5 20,10"/>',
+ "analitica": '<rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/>',
+ "inversion": '<circle cx="12" cy="12" r="9"/><path d="M9 14.5c0 1.1 1.3 2 3 2s3-.9 3-2-1.3-2-3-2-3-.9-3-2 1.3-2 3-2 3 .9 3 2"/><line x1="12" y1="7.5" x2="12" y2="9"/><line x1="12" y1="17" x2="12" y2="18.5"/>',
+ "idea": '<path d="M9 21h6"/><path d="M10 17h4"/><path d="M12 3a6 6 0 0 1 6 6c0 2.2-1.2 4.1-3 5.2V17H9v-2.8A6 6 0 0 1 6 9a6 6 0 0 1 6-6z"/>',
+ "equipo": '<circle cx="9" cy="7" r="3"/><path d="M3 21v-2a5 5 0 0 1 5-5h2"/><circle cx="17" cy="9" r="3"/><path d="M13 21v-2a5 5 0 0 1 5-5h1a5 5 0 0 1 5 5v2"/>',
+ "objetivo": '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/>',
+ "mercado": '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 0 1 0 18"/><path d="M12 3a15 15 0 0 0 0 18"/>',
+ "producto": '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27,6.96 12,12.01 20.73,6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
+ "automatizacion": '<path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/><polyline points="18,2 22,2 22,6"/>',
+ "tiempo": '<rect x="3" y="4" width="18" height="17" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="7" y1="14" x2="11" y2="14"/><line x1="7" y1="17" x2="15" y2="17"/>',
+ "seguridad": '<path d="M12 3l8 4v5c0 4.4-3.4 8.5-8 9.5C7.4 20.5 4 16.4 4 12V7z"/><polyline points="9,12 11,14 15,10"/>',
+ "alcance": '<path d="M5.5 5.5A8.38 8.38 0 0 0 3 12a9 9 0 0 0 9 9 9 9 0 0 0 9-9 8.38 8.38 0 0 0-2.5-6.5"/><path d="M8.5 8.5A4.24 4.24 0 0 0 7 12a5 5 0 0 0 5 5 5 5 0 0 0 5-5 4.24 4.24 0 0 0-1.5-3.5"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/>',
+ "innovacion": '<circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/>',
+}
+
+
+def line_icon(x, y, size, color, name, circle=True):
+    inner = ICONS[name]
+    isz = size * 96 * 0.5
+    svg = (f'<svg viewBox="0 0 24 24" width="{isz:.0f}" height="{isz:.0f}" fill="none" '
+           f'stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{inner}</svg>')
+    base = f"position:absolute;left:{_p(x)};top:{_p(y)};width:{_p(size)};height:{_p(size)};display:flex;align-items:center;justify-content:center;"
+    if circle:
+        base += f"border-radius:50%;background:{color}1f;"
+    return f'<div style="{base}">{svg}</div>'
 
 
 def bullet(x, y, w, head, body, color=ACCENT):
@@ -327,12 +349,12 @@ def s06():  # Vision — fila de 3 iconos circulares
            txt(0.72, 2.25, 11.0, 0.8,
                "Ser el socio de crecimiento de referencia en la region, reconocido por convertir estrategia en resultados.",
                16, DIM, 400, lh=1.4)]
-    items = [("Alcance regional", "Presencia en los principales mercados de LatAm.", DATA[0]),
-             ("Excelencia operativa", "Procesos eficientes y escalables como ventaja.", DATA[2]),
-             ("Innovacion constante", "Adopcion temprana de tecnologia y datos.", DATA[4])]
-    for i, (h, b, col) in enumerate(items):
+    items = [("Alcance regional", "Presencia en los principales mercados de LatAm.", DATA[0], "alcance"),
+             ("Excelencia operativa", "Procesos eficientes y escalables como ventaja.", DATA[2], "automatizacion"),
+             ("Innovacion constante", "Adopcion temprana de tecnologia y datos.", DATA[4], "innovacion")]
+    for i, (h, b, col, ic) in enumerate(items):
         x = 1.4 + i * 3.95
-        out += [circ_icon(x, 3.5, 1.35, col),
+        out += [line_icon(x, 3.5, 1.35, col, ic),
                 txt(x - 0.85, 5.1, 3.05, 0.4, h, 14, TEXT, 600, "center"),
                 txt(x - 0.85, 5.5, 3.05, 0.7, b, 11, MUTED, 400, "center", lh=1.3)]
     out.append(footer(6))
@@ -356,13 +378,14 @@ def s07():  # Objetivo de negocio — donut grande + 3 bullets
 def s08():  # Approach — fila de iconos circulares con pasos
     out = [title(f"Nuestro {AC('enfoque.')}"),
            txt(0.72, 2.18, 11.0, 0.4, "Seis pasos para llevar la estrategia a resultados.", 12.5, MUTED, 400)]
-    steps = [("01", "Descubrir"), ("02", "Diagnosticar"), ("03", "Diseñar"),
-             ("04", "Ejecutar"), ("05", "Medir"), ("06", "Optimizar")]
+    steps = [("01", "Descubrir", "objetivo"), ("02", "Diagnosticar", "analitica"),
+             ("03", "Diseñar", "idea"), ("04", "Ejecutar", "automatizacion"),
+             ("05", "Medir", "crecimiento"), ("06", "Optimizar", "seguridad")]
     d = 1.15
-    for i, (n, t) in enumerate(steps):
+    for i, (n, t, ic) in enumerate(steps):
         x = 0.78 + i * 2.05
         col = DATA[i % len(DATA)]
-        out += [circ_icon(x, 3.1, d, col),
+        out += [line_icon(x, 3.1, d, col, ic),
                 txt(x - 0.45, 4.45, d + 0.9, 0.35, t, 12.5, TEXT, 600, "center"),
                 txt(x - 0.45, 4.85, d + 0.9, 0.3, "Paso " + n, 9.5, col, 700, "center", upper=True, spacing=0.6)]
         if i < len(steps) - 1:
