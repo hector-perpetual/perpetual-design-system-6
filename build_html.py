@@ -251,10 +251,12 @@ def kicker(x, y, label, color=ACCENT):
 # ===========================================================================
 def s01():  # Portada ejecutiva
     return (logo(0.7, 0.65, 1.5)
-            + blob(8.7, -1.1, 3.4, "#DBE7FB") + blob(11.3, 1.9, 2.2, "#FDE9D6")
-            + hexagon(9.05, 2.35, 2.2, ACCENT) + box(9.85, 3.15, 0.62, 0.62, fill=YELLOW, oval=True)
-            + box(8.55, 4.3, 0.34, 0.34, fill=ACCENT2, oval=True)
-            + box(11.55, 3.9, 0.22, 0.22, fill=ACCENT, oval=True)
+            + box(8.5, 1.45, 4.0, 4.0, oval=True, fill=SURFACE2)      # disco suave
+            + box(8.75, 1.7, 3.5, 3.5, oval=True, fill=ACCENT)        # disco azul
+            + box(9.2, 2.15, 2.6, 2.6, oval=True, fill=WHITE)         # recorta -> anillo azul
+            + box(9.95, 2.9, 1.1, 1.1, oval=True, fill=ACCENT)        # punto central azul
+            + blob(12.1, 1.5, 0.42, ACCENT2)                          # acento naranja
+            + blob(8.2, 5.0, 0.32, YELLOW)
             + kicker(0.72, 2.05, "Perpetual Technologies · Confidencial")
             + txt(0.7, 2.45, 7.6, 2.2, f"Plan de negocio<br>{AC('2026.')}", 56, TEXT, 800, lh=0.98)
             + txt(0.72, 4.55, 6.4, 0.4, "Estrategia, crecimiento y ejecucion", 14, DIM, 600)
