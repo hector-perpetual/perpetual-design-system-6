@@ -49,3 +49,7 @@ Paleta de datos: azul, naranja, verde `#059669`, amarillo, morado `#7e22ce`, gri
 ---
 
 Confidencial · Perpetual Technologies © 2026
+
+## Marca (fuente de verdad)
+
+La carpeta `brand/` contiene los tokens, componentes y reglas de marca de Perpetual (SKILL.md + references). Este repo es autosuficiente: diseno, fuentes (Armin Grotesk embebida), logos y reglas de marca en un solo lugar.
